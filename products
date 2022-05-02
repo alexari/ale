@@ -1,0 +1,59 @@
+#!python
+
+import os
+
+from optparse import OptionParser
+from product import ETProductParser, TerminalViewer
+
+class ActionCount:
+    
+    def __init__(self, model) -> None:
+        self.model = TerminalViewer(model)    
+        
+    
+    def __call__(self, option, opt_str, value, parser):
+        self.model.count()
+
+
+class ActionProducts:
+    
+    def __init__(self, model) -> None:
+        self.model = TerminalViewer(model)    
+        
+    def __call__(self, option, opt_str, value, parser):
+        self.model.products()
+
+
+class ActionParts:
+
+    def __init__(self, model) -> None:
+        self.model = TerminalViewer(model)    
+        
+    def __call__(self, option, opt_str, value, parser):
+        self.model.parts()
+
+
+class ActionServer:
+
+    def __call__(self, option, opt_str, value, parser):
+        os.system("export FLASK_APP=app|flask run --host 0.0.0.0")
+
+
+class CLIParser(OptionParser):
+
+    def __init__(self, model) -> None:
+        
+        super().__init__()
+
+        model.load()
+
+        self.add_option("-c", "--count", action="callback", callback=ActionCount(model))
+        self.add_option("-p", "--products", action="callback", callback=ActionProducts(model))
+        self.add_option("-t", "--parts", action="callback", callback=ActionParts(model))
+        self.add_option("-s", "--server", action="callback", callback=ActionServer())
+
+
+model = ETProductParser("http://www.astramodel.cz/b2b/export_xml_PSs6t5prnOYaHfTOUI-6XNF6m.zip", 
+                        "export_full.xml")
+
+CLIParser(model).parse_args()
